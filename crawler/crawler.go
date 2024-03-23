@@ -153,13 +153,26 @@ func Rank(search string, content []string) []int {
 func (c *Crawler) Search(search string) {
   ranks := Rank(search, c.Content)
 
-  sort.Slice(c.Content, func(i, j int) bool {
-    return ranks[i] < ranks[j]
-  })
+  var wg sync.WaitGroup
+  wg.Add(1)
+  go func(){
+    defer wg.Done()
 
-  sort.Slice(c.URL, func(i, j int) bool {
-    return ranks[i] < ranks[j]
-  })
+    sort.Slice(c.Content, func(i, j int) bool {
+      return ranks[i] < ranks[j]
+    })
+  }()
+
+  wg.Add(1)
+  go func(){
+    defer wg.Done()
+
+    sort.Slice(c.URL, func(i, j int) bool {
+      return ranks[i] < ranks[j]
+    })
+  }()
+
+  // TODO: feed this into a LLM
 }
 
 func Index(url string) (*Crawler, error) {
@@ -172,6 +185,7 @@ func Index(url string) (*Crawler, error) {
     c.SetLinkPattern(trimmedURL)
     
     c.Visit(url)
+
     c.Wait()
     wg.Wait()
 
