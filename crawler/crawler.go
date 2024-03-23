@@ -11,6 +11,7 @@ import (
   "net/http"
   "errors"
   "sync"
+  "sort"
   // "io"
   // "bytes"
   // "golang.org/x/net/html"
@@ -130,11 +131,35 @@ func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
   })
 }
 
-func (c *Crawler) Search(search string) {
-  matches := fuzzy.Find(search, c.Content)
-  for _, match := range matches {
-    fmt.Println(match[:66])
+// parallelized sort by rank similarity
+func Rank(search string, content []string) []int {
+  var wg sync.WaitGroup
+  ranks := make([]int, len(content))
+
+  for idx, str := range content {
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+      ranks[idx] = fuzzy.RankMatchNormalizedFold(search, str)
+    }()
   }
+
+  wg.Wait()
+
+  return ranks
+}
+
+// reorder the content and urls to reflect the best matches
+func (c *Crawler) Search(search string) {
+  ranks := Rank(search, c.Content)
+
+  sort.Slice(c.Content, func(i, j int) bool {
+    return ranks[i] < ranks[j]
+  })
+
+  sort.Slice(c.URL, func(i, j int) bool {
+    return ranks[i] < ranks[j]
+  })
 }
 
 func Index(url string) (*Crawler, error) {
