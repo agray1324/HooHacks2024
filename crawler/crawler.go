@@ -1,4 +1,4 @@
-package main
+package crawler
 
 import (
   "fmt"
@@ -6,6 +6,8 @@ import (
   "bufio"
   "math/rand"
   "strings"
+  "time"
+  "regexp"
   "github.com/gocolly/colly/v2"
 )
 
@@ -24,18 +26,41 @@ func loadAgents() []string {
 //   return userAgents[rand.Intn(len(userAgents))]
 // }
 
+// func setupCollector() *colly.Collector {
+//
+// }
+
 func main() {
   userAgents := loadAgents()
 
   c := colly.NewCollector(
-    // colly.AllowedDomains("toscrape.com"),
     colly.MaxDepth(5),
-    colly.UserAgent(userAgents[rand.Intn(len(userAgents))]),
   )
+
+
+  c.OnRequest(func (r *colly.Request) {
+    r.Headers.Set("User-Agent", userAgents[rand.Intn(len(userAgents))])
+  })
+
+  c.Limit(&colly.LimitRule{
+    DomainGlob: "*",
+    Parallelism: 2,
+    RandomDelay: 50 * time.Millisecond,
+  })
 
   c.OnHTML("p", func(e *colly.HTMLElement){
     fmt.Println(strings.TrimSpace(e.Text))
   })
+  
+  pattern := "*example.com*"
+
+  c.OnHTML("a", func(e *colly.HTMLElement){
+    nextPage := e.Request.AbsoluteURL(e.Attr("href"))
+    b, _ := regexp.MatchString(pattern, nextPage)
+    if b {
+      c.Visit(nextPage)
+    }
+  }) 
 
   c.Visit("https://www.example.com")
 }
