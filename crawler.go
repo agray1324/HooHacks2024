@@ -4,8 +4,9 @@ import (
   "fmt"
   "os"
   "bufio"
-  "github.com/gocolly/colly/v2"
   "math/rand"
+  "strings"
+  "github.com/gocolly/colly/v2"
 )
 
 func loadAgents() []string {
@@ -26,14 +27,15 @@ func loadAgents() []string {
 func main() {
   userAgents := loadAgents()
 
-  for i := 0; i < 5; i++ {
-    fmt.Println(userAgents[rand.Intn(len(userAgents))])
-  }
-
   c := colly.NewCollector(
-    colly.AllowedDomains("toscrape.com"),
+    // colly.AllowedDomains("toscrape.com"),
     colly.MaxDepth(5),
-    // colly.UserAgent(randomAgent()),
+    colly.UserAgent(userAgents[rand.Intn(len(userAgents))]),
   )
-  c.Visit("www.example.com")
+
+  c.OnHTML("p", func(e *colly.HTMLElement){
+    fmt.Println(strings.TrimSpace(e.Text))
+  })
+
+  c.Visit("https://www.example.com")
 }
