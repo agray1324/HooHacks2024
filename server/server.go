@@ -1,6 +1,4 @@
-package main
-
-
+package server
 
 func Server(){
     r := Router()    
