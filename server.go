@@ -3,7 +3,7 @@ package main
 
 
 func Server(){
-    r := router.Router()    
+    r := Router()    
     r.Run(":8080")  
     
 }
