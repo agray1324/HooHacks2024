@@ -6,7 +6,7 @@ import (
   "bufio"
   "math/rand"
   "strings"
-  "time"
+  // "time"
   "regexp"
   "net/http"
   "errors"
@@ -15,6 +15,7 @@ import (
   // "bytes"
   // "golang.org/x/net/html"
   "github.com/gocolly/colly/v2"
+  "github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 func loadAgents() []string {
@@ -30,8 +31,8 @@ func loadAgents() []string {
 
 type Crawler struct {
   Collector *colly.Collector
-  URL []*string
-  Content []*string
+  URL []string
+  Content []string
   Pattern string
   mtex sync.Mutex
   Count int
@@ -64,8 +65,8 @@ func setupCollector() *colly.Collector {
   // random delay on accesses
   c.Limit(&colly.LimitRule{
     DomainGlob: "*",
-    Parallelism: 10,
-    RandomDelay: 50 * time.Millisecond,
+    Parallelism: 100,
+    // RandomDelay: 50 * time.Millisecond,
   })
 
   c.Async = true
@@ -121,15 +122,22 @@ func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
       url := e.Request.URL.String()
 
       c.mtex.Lock()
-      c.Content = append(c.Content, &text)
-      c.URL = append(c.URL, &url)
+      c.Content = append(c.Content, text)
+      c.URL = append(c.URL, url)
       c.Count += 1
       c.mtex.Unlock()
     }()
   })
 }
 
-func Crawl(url string) (*Crawler, error) {
+func (c *Crawler) Search(search string) {
+  matches := fuzzy.Find(search, c.Content)
+  for _, match := range matches {
+    fmt.Println(match[:66])
+  }
+}
+
+func Index(url string) (*Crawler, error) {
   var wg sync.WaitGroup
   c := NewCrawler()
   c.CleanBody(&wg)
