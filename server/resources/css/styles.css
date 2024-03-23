@@ -1,26 +1,49 @@
+.title-holder {
+    text-align: center;
+    width:100%;
+}
+
 .title {
     font-size: 100px;
-    text-align: center;
     background-color: #98d5ff;
     color:white;
-    width:auto;
+    margin-top:6%;
+    min-width: 3.5em;
 }
+
 #milk{
     /*border: 3px solid #98d5ff;*/
-    margin-top:6%;
+    padding:20px;
     color:#98d5ff;
     background-color: white;
 }
 
-body{
+#searchTitle{
+    padding:20px;
+    border-radius:50px;
+}
+
+.container{
     flex-direction: column;
     display:flex;
     align-items: center;
-    min-height: 100%;
-    width: 100%;
-    height: 100%; /* NEW */
 }
 
-.searchIcon{
-    background-color:blue;
+#search{
+    margin-top:2%
+}
+
+.btn-primary{
+    background-color: #98d5ff;
+    border-color: #98d5ff;
+}
+
+#milkImage{
+    width: 4%;
+    height: 4%;
+    margin: 1% 0 0 1%;
+}
+.container{
+    margin:0;
+    max-width: none;
 }
