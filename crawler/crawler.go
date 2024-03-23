@@ -9,6 +9,11 @@ import (
   "time"
   "regexp"
   "net/http"
+  "errors"
+  "sync"
+  // "io"
+  // "bytes"
+  // "golang.org/x/net/html"
   "github.com/gocolly/colly/v2"
 )
 
@@ -25,8 +30,23 @@ func loadAgents() []string {
 
 type Crawler struct {
   Collector *colly.Collector
-  URLs []string
+  URL []*string
+  Content []*string
   Pattern string
+  mtex sync.Mutex
+  Count int
+}
+
+func (c *Crawler) Init() {
+  c.Collector = setupCollector()
+  c.Pattern = ""
+  c.Count = 0
+}
+
+func NewCrawler() *Crawler {
+  c := &Crawler{}
+  c.Init()
+  return c
 }
 
 func setupCollector() *colly.Collector {
@@ -41,16 +61,14 @@ func setupCollector() *colly.Collector {
     r.Headers.Set("User-Agent", userAgents[rand.Intn(len(userAgents))])
   })
 
-  // c.OnHTML("p", func(e *colly.HTMLElement){
-  //   fmt.Println(strings.TrimSpace(e.Text))
-  // })
-
   // random delay on accesses
   c.Limit(&colly.LimitRule{
     DomainGlob: "*",
-    Parallelism: 2,
+    Parallelism: 10,
     RandomDelay: 50 * time.Millisecond,
   })
+
+  c.Async = true
 
   return c
 }
@@ -65,20 +83,12 @@ func (c *Crawler) SetLinkPattern(pattern string) {
   }) 
 }
 
-func (c *Crawler) Init() {
-  c.Collector = setupCollector()
-  c.URLs = []string{}
-  c.Pattern = ""
-}
-
-func NewCrawler() *Crawler {
-  c := &Crawler{}
-  c.Init()
-  return c
-}
-
 func (c *Crawler) Visit(url string) {
   c.Collector.Visit(url)
+}
+
+func (c *Crawler) Wait() {
+  c.Collector.Wait()
 }
 
 func trimURL(url string) string {
@@ -97,15 +107,46 @@ func TestResponse(url string) bool {
   return response.StatusCode < 400
 }
 
-func Crawl(url string) {
+// needs a reference to a waitgroup to parallelize storage
+func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
+  c.Collector.OnHTML("body", func(e *colly.HTMLElement){
+    // create a new thread that stores data
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+
+      text := strings.TrimSpace(e.Text)
+      s := regexp.MustCompile(`\s+`)
+      text = s.ReplaceAllString(text, " ")
+      url := e.Request.URL.String()
+
+      c.mtex.Lock()
+      c.Content = append(c.Content, &text)
+      c.URL = append(c.URL, &url)
+      c.Count += 1
+      c.mtex.Unlock()
+    }()
+  })
+}
+
+func Crawl(url string) (*Crawler, error) {
+  var wg sync.WaitGroup
   c := NewCrawler()
+  c.CleanBody(&wg)
 
-  fmt.Println(TestResponse(url))
+  if (TestResponse(url)) {
+    trimmedURL := trimURL(url)
+    c.SetLinkPattern(trimmedURL)
+    
+    c.Visit(url)
+    c.Wait()
+    wg.Wait()
 
-  // TODO: throw error if link does not contain http
-  trimmedURL:= trimURL(url)
+    fmt.Println("Searched", c.Count, "web addresses")
 
-  c.SetLinkPattern(trimmedURL)
-  c.Visit(url)
+    return c, nil
+  } else {
+    return c, errors.New("URL is not valid")
+  }
 }
 
