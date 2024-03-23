@@ -30,7 +30,7 @@ func loadAgents() []string {
 //
 // }
 
-func main() {
+func Temp() {
   userAgents := loadAgents()
 
   c := colly.NewCollector(
@@ -63,4 +63,6 @@ func main() {
   }) 
 
   c.Visit("https://www.example.com")
+
 }
+
