@@ -8,6 +8,7 @@ import (
   "strings"
   "time"
   "regexp"
+  "net/http"
   "github.com/gocolly/colly/v2"
 )
 
@@ -88,14 +89,23 @@ func trimURL(url string) string {
   return url
 }
 
-func Temp() {
+func TestResponse(url string) bool {
+  response, err := http.Get(url)
+  if err != nil {
+    return false
+  }
+  return response.StatusCode < 400
+}
+
+func Crawl(url string) {
   c := NewCrawler()
 
-  link := "https://quotes.toscrape.com/"
-  trimmed_link := trimURL(link)
-  fmt.Println(trimmed_link)
+  fmt.Println(TestResponse(url))
 
-  c.SetLinkPattern(trimmed_link)
-  c.Visit(link)
+  // TODO: throw error if link does not contain http
+  trimmedURL:= trimURL(url)
+
+  c.SetLinkPattern(trimmedURL)
+  c.Visit(url)
 }
 
