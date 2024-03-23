@@ -149,30 +149,37 @@ func Rank(search string, content []string) []int {
   return ranks
 }
 
+func asyncSortRank(sli []string, ranks []int, wg *sync.WaitGroup) {
+  defer wg.Done()
+
+  sort.Slice(sli, func(i, j int) bool {
+    return ranks[i] > ranks[j]
+  })
+}
+
 // reorder the content and urls to reflect the best matches
-func (c *Crawler) Search(search string) {
+func (c *Crawler) FuzzySearch(search string) {
   ranks := Rank(search, c.Content)
 
   var wg sync.WaitGroup
-  wg.Add(1)
-  go func(){
-    defer wg.Done()
 
-    sort.Slice(c.Content, func(i, j int) bool {
-      return ranks[i] < ranks[j]
-    })
-  }()
+  wg.Add(2)
+  go asyncSortRank(c.Content, ranks, &wg)
+  go asyncSortRank(c.URL, ranks, &wg)
+  wg.Wait()
 
-  wg.Add(1)
-  go func(){
-    defer wg.Done()
+  // sort ranks
+  sort.Slice(ranks, func(i, j int) bool {
+    return ranks[i] > ranks[j]
+  })
 
-    sort.Slice(c.URL, func(i, j int) bool {
-      return ranks[i] < ranks[j]
-    })
-  }()
+  fmt.Println("Top 3 related links:")
+  for i := 0; i < 3; i++ {
+    fmt.Println("\t", i+1, ".", c.URL[i])
+  }
 
   // TODO: feed this into a LLM
+  // TODO: remember to select by nonzero rank
 }
 
 func Index(url string) (*Crawler, error) {
