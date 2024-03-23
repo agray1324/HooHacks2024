@@ -1,27 +1,27 @@
-.title-holder {
-    text-align: center;
-    width:100%;
-}
-
 .title {
     font-size: 100px;
-    background-color: #98d5ff;
     color:white;
     margin-top:6%;
     min-width: 3.5em;
 }
 
-#milk{
-    /*border: 3px solid #98d5ff;*/
+#titleBackground{
+    width: 3.5em;
+    background-color: #98d5ff;
+    border-radius:50px;
+    text-align: left;
     padding:20px;
-    color:#98d5ff;
-    background-color: white;
 }
 
-#searchTitle{
+#milk{
+    /*border: 3px solid #98d5ff;*/
+    width: 3.5em;
+    color:#98d5ff;
+    background-color: white;
+    text-align: center;
     padding:20px;
-    border-radius:50px;
 }
+
 
 .container{
     flex-direction: column;
@@ -30,7 +30,16 @@
 }
 
 #search{
-    margin-top:2%
+    margin-top:2%;
+    min-width:40%;
+}
+
+#input-group{
+    width:100%;
+}
+
+#searchForm{
+    width: 50%;
 }
 
 .btn-primary{
@@ -39,11 +48,15 @@
 }
 
 #milkImage{
-    width: 4%;
-    height: 4%;
-    margin: 1% 0 0 1%;
+    width: 60px;
+    height: 60px;
+    margin: 15px 0px 0px 15px;
 }
 .container{
     margin:0;
     max-width: none;
+}
+
+#searchText{
+    min-width: 100%;
 }

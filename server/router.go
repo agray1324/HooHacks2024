@@ -16,5 +16,10 @@ func Router() *gin.Engine {
         c.HTML(http.StatusOK, "index.tmpl", gin.H{})
     })
 
+    r.POST("/search", func(c *gin.Context) {
+        website := c.PostForm("website")
+        c.String(200, "Website: %s", website)
+    })
+
     return r
 }
