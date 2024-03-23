@@ -7,9 +7,10 @@ import (
 
 func Router() *gin.Engine {
     r := gin.Default()
+	r.LoadHTMLGlob("server/resources/*")
     r.GET("/", func(c *gin.Context) {
         c.Header("Content-Type", "text/html")
-        c.HTML(http.StatusOK, "index.html", gin.H{})
+        c.HTML(http.StatusOK, "index.tmpl", gin.H{})
     })
 
     return r
