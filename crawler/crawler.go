@@ -18,6 +18,7 @@ import (
   // "golang.org/x/net/html"
   "github.com/gocolly/colly/v2"
   "github.com/lithammer/fuzzysearch/fuzzy"
+  // "github.com/blevesearch/bleve/v2"
   // usearch "github.com/unum-cloud/usearch/golang"
 )
 
@@ -39,6 +40,9 @@ type Crawler struct {
   Titles map[string]string
   Pattern string
   mtex sync.Mutex
+  // tokenMutex sync.Mutex
+  // Tokens []string
+  // Index bleve.Index
   Count int
 }
 
@@ -47,6 +51,13 @@ func (c *Crawler) Init() {
   c.Pattern = ""
   c.Count = 0
   c.Titles = make(map[string]string)
+  // mapping := bleve.NewIndexMapping()
+  // index, err := bleve.New("bleve.storage", mapping)
+  // if err != nil {
+  //   fmt.Println(err)
+  // }
+  // c.Index = index
+
 }
 
 func NewCrawler() *Crawler {
@@ -143,7 +154,9 @@ func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
       c.mtex.Lock()
       c.Content = append(c.Content, text)
       c.URL = append(c.URL, url)
-      // c.Titles = append(c.Titles, e.Response.)
+      // for _, str := range strings.Split(text, " ") {
+      //   c.Index.Index(url, str)
+      // }
       c.Count += 1
       c.mtex.Unlock()
     }()
@@ -198,6 +211,18 @@ func (c *Crawler) FuzzySearch(search string) {
   }
 }
 
+// func (c *Crawler) BleveSearch(q string) {
+  // query := bleve.NewFuzzyQuery(q)
+  // set the max levenshtein edit distance for the query to 2
+  // essentiall, allow for 2 typos
+  // query.Fuzziness = 2
+
+  // search := bleve.NewSearchRequest(query)
+  // searchResults, _ := c.Index.Search(search)
+
+  // fmt.Println(searchResults)
+// }
+
 func (c *Crawler) Search(search string) (string, string) {
   var urls []string
   var titles []string
@@ -210,91 +235,6 @@ func (c *Crawler) Search(search string) (string, string) {
   }
 
   return strings.Join(urls, `\,\`), strings.Join(titles, `\,\`)
-  // // Create Index
-  //   vector_size := 3
-  //   vectors_count := 100
-  //   conf := usearch.DefaultConfig(uint(vector_size))
-  //   index,err := usearch.NewIndex(conf)
-  //   if err != nil {
-  //       panic("Failed to create Index")
-  //   }
-  //   defer index.Destroy()
-  //
-  //   // Add to Index
-  //   err = index.Reserve(uint(vectors_count))
-  //   for i := 0; i < vectors_count; i++ {
-  //       err = index.Add(usearch.Key(i), []float32{float32(i), float32(i+1), float32(i+2)})
-  //       if err != nil {
-  //           panic("Failed to add")
-  //       }
-  //   }
-  //
-  //   // Search
-  //   keys, distances, err := index.Search([]float32{0.0, 1.0, 2.0}, 3)
-  //   if err != nil {
-  //       panic("Failed to search")
-  //   }
-  //   fmt.Println(keys, distances)
-//   url := "https://api.predictionguard.com/chat/completions"
-//   method := "POST"
-//
-//   ind := 0
-//
-//   for i, item := range c.Content {
-//     if strings.Contains(item, "Schulz") {
-//       ind = i
-//     }
-//   }
-//
-//   fmt.Println(c.Content[ind])
-//   fmt.Println(c.URL[ind])
-//   question := `### Instruction:\n Read and respond to the following passage with only an integer value between 0 and 100 based on how related the passage is to the following query: ` + search + `. Do not include any other text aside from the integer value. The passage is as follows: \n` + c.Content[ind]
-//
-//   // question := `You are a ranking machine trying to determine the most relevant website for a given query. You are given the plain text on the website and must rate the entire text passage with one score. You can only respond with a single integer value and you cannot say any other words or characters. What portion of the following passage addresses the topic ` + search + `? Please rate this with an integer ranging from 1 to 100, where 1 is none and 100 is all of it: ` + c.Content[0]
-//
-//   payload := strings.NewReader(`{
-//     "model": "Neural-Chat-7B",
-//     "messages": [
-//         {
-//             "role": "user",
-//             "content": "` + question + `"
-//         }
-//     ]
-// }`)
-//
-//   client := &http.Client {
-//   }
-//
-//   req, err := http.NewRequest(method, url, payload)
-//
-//   if err != nil {
-//     fmt.Println(err)
-//     return
-//   }
-//
-//   file, _ := os.Open("prediction_guard.key")
-//   s := bufio.NewScanner(file)
-//   for s.Scan() {
-//     key := s.Text()
-//
-//     req.Header.Add("Content-Type", "application/json")
-//     req.Header.Add("x-api-key", key)
-//   }
-//
-//
-//   res, err := client.Do(req)
-//   if err != nil {
-//     fmt.Println(err)
-//     return
-//   }
-//   defer res.Body.Close()
-//
-//   body, err := ioutil.ReadAll(res.Body)
-//   if err != nil {
-//     fmt.Println(err)
-//     return
-//   }
-//   fmt.Println(string(body))
 }
 
 func Index(url string) (*Crawler, error) {
