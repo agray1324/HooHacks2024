@@ -89,6 +89,7 @@ func PageScore(search string, page []string) (int, int) {
   r := Relevances(search, page)
   rank := 0
   maxRank := 0
+
   for i, rel := range r {
     rank += rel
     if rel > r[maxRank] {

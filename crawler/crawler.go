@@ -197,15 +197,14 @@ func (c *Crawler) FuzzySearch(search string) {
 // }
 
 func (c *Crawler) Search(search string) (string, string, string) {
-  var urls []string
   var titles []string
 
-  for idx, con := range c.Content {
-    if strings.Contains(con, search) {
-      urls = append(urls, c.URL[idx])
-      titles = append(titles, c.Titles[c.URL[idx]])
-    }
-  }
+  // for idx, con := range c.Content {
+  //   if strings.Contains(con, search) {
+  //     urls = append(urls, c.URL[idx])
+  //     titles = append(titles, c.Titles[c.URL[idx]])
+  //   }
+  // }
 
   sorted_urls, explanations := PageRankings(search, c.Content, c.URL)
   joined_exp := make([]string, len(explanations))
