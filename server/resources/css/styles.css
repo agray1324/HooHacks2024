@@ -50,7 +50,9 @@
 #milkImage{
     width: 60px;
     height: 60px;
-    margin: 15px 0px 0px 15px;
+    position:absolute;
+    left: 15px;
+    top: 15px;
 }
 .container{
     margin:0;
@@ -74,6 +76,6 @@
     text-align: center;
 }
 
-#submitButton:{
+#submitButton{
     width:100%;
 }

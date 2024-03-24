@@ -1,5 +1,6 @@
 .title {
     font-size: 40px;
+    margin-top: 15px;
 }
 
 #titleBackground{
@@ -29,4 +30,9 @@
     width: 100%;
     border: 1px solid #98d5ff;
     background-color: white;
+}
+
+.max{
+    max-width:none;
+    width:100%;
 }
