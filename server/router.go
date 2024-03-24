@@ -18,6 +18,7 @@ func Router() *gin.Engine {
 
     r.POST("/search", func(c *gin.Context) {
         website := c.PostForm("website")
+        searchText := c.PostForm("searchText")
         delimiter:="\\,\\"
         urls:= "https://www.a.com" + delimiter + "https://www.b.com"
         titles:="Site a" + delimiter + "Site b"
@@ -36,6 +37,7 @@ func Router() *gin.Engine {
             "titles": titles,
             "data": data,
             "website": website,
+            "searchText": searchText,
         })
     })
 

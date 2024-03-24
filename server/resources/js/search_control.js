@@ -1,5 +1,5 @@
 window.onload = () => {
-    document.getElementById("website").innerHTML="Currently Searching:<br>" + _website
+    document.getElementById("website").innerHTML="Currently Searching:<br>" + _website +"<br><br>Searching For:<br>" + _searchText
     delimiter = "\\,\\"
     _urls = _urls.split(delimiter)
     _titles = _titles.split(delimiter)
