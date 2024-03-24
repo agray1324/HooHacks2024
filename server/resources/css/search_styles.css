@@ -1,0 +1,27 @@
+.title {
+    font-size: 40px;
+}
+
+#titleBackground{
+    width: 4em;
+}
+
+#website{
+    font-size: 20px;
+}
+
+#list{
+    border: 2px solid #98d5ff;
+    width: 60%
+}
+
+.link{
+    color: #33adff; 
+    width:100%;
+    align-content: right;
+}
+
+.listrow{
+    padding: 20px 0px 0px 20px;
+    width:100%;
+}

@@ -5,6 +5,10 @@
     min-width: 3.5em;
 }
 
+body{
+    color:#98d5ff;
+}
+
 #titleBackground{
     width: 3.5em;
     background-color: #98d5ff;
@@ -59,4 +63,17 @@
 
 #searchText{
     min-width: 100%;
+}
+
+.footer { 
+    position: absolute; 
+    bottom: 0;
+    left: 43%;
+    right:43%;
+    z-index: 10;
+    color: #98d5ff;
+}
+
+#acronym{
+    text-align: center;
 }
