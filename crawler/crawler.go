@@ -36,6 +36,7 @@ type Crawler struct {
   Collector *colly.Collector
   URL []string
   Content []string
+  Titles []string
   Pattern string
   mtex sync.Mutex
   Count int
@@ -129,6 +130,7 @@ func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
       c.mtex.Lock()
       c.Content = append(c.Content, text)
       c.URL = append(c.URL, url)
+      // c.Titles = append(c.Titles, e.Response.)
       c.Count += 1
       c.mtex.Unlock()
     }()
@@ -192,7 +194,7 @@ func (c *Crawler) Search(search string) string {
     }
   }
 
-  return strings.Join(urls, `\\,\\`)
+  return strings.Join(urls, `\,\`)
   // // Create Index
   //   vector_size := 3
   //   vectors_count := 100
