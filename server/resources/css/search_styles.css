@@ -16,6 +16,7 @@
     border: 2px solid #98d5ff;
     width: 60%;
     background-color: #98d5ff;
+    border-radius: 10px;
 }
 
 .link{
@@ -31,6 +32,7 @@
     border: 1px solid #98d5ff;
     background-color: white;
     cursor: pointer;
+    border-radius: 10px;
 }
 
 .max{
