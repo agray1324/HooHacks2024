@@ -127,7 +127,30 @@ func TestResponse(url string) bool {
 
 // needs a reference to a waitgroup to parallelize storage
 func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
+  // race condition, fix this
   c.Collector.OnHTML("title", func(e *colly.HTMLElement){
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+
+      c.mtex.Lock()
+      c.Titles[e.Request.URL.String()] = e.Text
+      c.mtex.Unlock()
+    }()
+  })
+
+  c.Collector.OnHTML("meta[name=description]", func(e *colly.HTMLElement){
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+
+      c.mtex.Lock()
+      c.Titles[e.Request.URL.String()] = e.Text
+      c.mtex.Unlock()
+    }()
+  })
+
+  c.Collector.OnHTML("meta[property=description]", func(e *colly.HTMLElement){
     wg.Add(1)
     go func() {
       defer wg.Done()
