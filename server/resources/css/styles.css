@@ -92,6 +92,7 @@ a{
     border: 2px solid #98d5ff;
     border-radius: 25px;
     padding: 0px 12px;
+    margin: 10px, 0px, 0px, 0px;
 }
 
 #backButton:hover{

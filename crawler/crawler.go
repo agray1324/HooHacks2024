@@ -192,7 +192,7 @@ func (c *Crawler) Search(search string) string {
     }
   }
 
-  return strings.Join(urls, `\\,\\`)
+  return strings.Join(urls, `\,\`)
   // // Create Index
   //   vector_size := 3
   //   vectors_count := 100
