@@ -170,5 +170,5 @@ func asyncSortRankInt(sli []int, ranks []int) {
 }
 
 func getKeywords(rel int, tokens []string) []string{
-  return tokens[max(0, rel-5):min(len(tokens), rel+5)]
+  return tokens[max(0, rel-10):min(len(tokens), rel+10)]
 }
