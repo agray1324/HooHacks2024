@@ -18,7 +18,27 @@ func Router() *gin.Engine {
 
     r.POST("/search", func(c *gin.Context) {
         website := c.PostForm("website")
-        c.String(200, "Website: %s", website)
+        searchText := c.PostForm("searchText")
+        delimiter:="\\,\\"
+        urls:= "https://www.a.com" + delimiter + "https://www.b.com"
+        titles:="Site a" + delimiter + "Site b"
+        data:= "aaaa" + delimiter + "bbbb"
+        /*urls :=  make(map[int]string)
+        urls[1] = "a.com"
+        urls[2] = "b.com"
+        titles :=  make(map[int]string)
+        titles[1] = "Site a"
+        titles[2] = "Site b"
+        data :=  make(map[int]string)
+        data[1] = "aaaa"
+        data[2] = "bbbb"*/
+        c.HTML(http.StatusOK, "search.tmpl", gin.H{
+            "urls": urls,
+            "titles": titles,
+            "data": data,
+            "website": website,
+            "searchText": searchText,
+        })
     })
 
     return r

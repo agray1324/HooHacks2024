@@ -7,7 +7,7 @@
     </head>
 
 <body> 
-    <img src="/img/favicon.ico" id="milkImage">
+    <a href="/"><img src="/img/favicon.ico" id="milkImage"></a>
     <container class="container">
         <div class="row" style="align-items: left;">
         </div>
@@ -25,17 +25,28 @@
         </div>
         <form id="searchForm" action="/search" method="post">
             <div class="row" id="search">
-                <div class="form-outline col-11" data-mdb-input-init>
-                    <input type="search" id="searchText" name="website" class="form-control" placeholder="URL"/>
+                <div class="form-outline col-12" data-mdb-input-init>
+                    <input required type="search" id="urlText" name="website" class="form-control" placeholder="URL"/>
                 </div>
-                <div class="col-1">
-                    <button type="submit" class="btn btn-primary" data-mdb-ripple-init>
-                        <i class="fas fa-search"></i>
+                <br><br>
+                <div class="form-outline col-12" data-mdb-input-init>
+                    <input required type="search" id="searchText" name="searchText" class="form-control" placeholder="Search For..."/>
+                </div>
+                <br><br>
+                <div class="col-5"></div>
+                <div class="col-2">
+                    <button id="submitButton" type="submit" class="btn btn-primary" data-mdb-ripple-init>
+                        Search&nbsp;&nbsp;&nbsp;<i class="fas fa-search"></i>
                     </button>
                 </div>
             </div>
         </form>
     </container>
+    <div class="footer">
+        <p1 id="acronym">
+            Multipage Internet Link Keyfinder
+        </p1>
+    </div>
 </body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>

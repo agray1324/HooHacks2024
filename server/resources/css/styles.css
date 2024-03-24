@@ -45,13 +45,21 @@
 .btn-primary{
     background-color: #98d5ff;
     border-color: #98d5ff;
+    min-width: 7em;
+}
+
+a{
+    text-decoration: none;
 }
 
 #milkImage{
     width: 60px;
     height: 60px;
-    margin: 15px 0px 0px 15px;
+    position:absolute;
+    left: 15px;
+    top: 15px;
 }
+
 .container{
     margin:0;
     max-width: none;
@@ -59,4 +67,33 @@
 
 #searchText{
     min-width: 100%;
+}
+
+.footer { 
+    position: absolute; 
+    bottom: 0;
+    left: 43%;
+    right:43%;
+    z-index: 10;
+    color: #98d5ff;
+    font-weight: bold;
+}
+
+#acronym{
+    text-align: center;
+    width:100%;
+}
+
+#submitButton{
+    width:100%;
+}
+
+#backButton{
+    border: 2px solid #98d5ff;
+    border-radius: 25px;
+    padding: 0px 12px;
+}
+
+#backButton:hover{
+    background-color: #98d5ff;
 }
