@@ -100,7 +100,7 @@ func PageScore(search string, page []string) (int, int) {
 }
 
 func PageRankings(search string, pages []string, urls []string) ([]string, [][]string) {
-  var wg sync.WaitGroup
+  // var wg sync.WaitGroup
   scores := make([]int, len(pages))
   rel := make([]int, len(pages))
   tokens := make([][]string, len(pages))
@@ -113,16 +113,11 @@ func PageRankings(search string, pages []string, urls []string) ([]string, [][]s
     scores[i], rel[i] = PageScore(search, tokens[i])
   }
 
-  wg.Add(1)
-  asyncSortRankDouble(tokens, scores, &wg)
+  asyncSortRankDouble(tokens, scores)
 
-  wg.Add(1)
-  asyncSortRank(urls, scores, &wg)
+  asyncSortRank(urls, scores)
 
-  wg.Add(1)
-  asyncSortRankInt(rel, scores, &wg)
-
-  wg.Wait()
+  asyncSortRankInt(rel, scores)
 
   sort.Slice(scores, func(i, j int) bool {
     return scores[i] > scores[j]
@@ -155,25 +150,19 @@ func FuzzyRank(search string, content []string) []int {
   return ranks
 }
 
-func asyncSortRank(sli []string, ranks []int, wg *sync.WaitGroup) {
-  defer wg.Done()
-
+func asyncSortRank(sli []string, ranks []int) {
   sort.Slice(sli, func(i, j int) bool {
     return ranks[i] > ranks[j]
   })
 }
 
-func asyncSortRankDouble(sli [][]string, ranks []int, wg *sync.WaitGroup) {
-  defer wg.Done()
-
+func asyncSortRankDouble(sli [][]string, ranks []int) {
   sort.Slice(sli, func(i, j int) bool {
     return ranks[i] > ranks[j]
   })
 }
 
-func asyncSortRankInt(sli []int, ranks []int, wg *sync.WaitGroup) {
-  defer wg.Done()
-
+func asyncSortRankInt(sli []int, ranks []int) {
   sort.Slice(sli, func(i, j int) bool {
     return ranks[i] > ranks[j]
   })

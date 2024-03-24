@@ -12,7 +12,7 @@ import (
   "net/http"
   "errors"
   "sync"
-  "sort"
+  // "sort"
   // "io"
   // "bytes"
   // "golang.org/x/net/html"
@@ -163,26 +163,26 @@ func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
 }
 
 // reorder the content and urls to reflect the best matches
-func (c *Crawler) FuzzySearch(search string) {
-  ranks := FuzzyRank(search, c.Content)
-
-  var wg sync.WaitGroup
-
-  wg.Add(2)
-  go asyncSortRank(c.Content, ranks, &wg)
-  go asyncSortRank(c.URL, ranks, &wg)
-  wg.Wait()
-
-  // sort ranks
-  sort.Slice(ranks, func(i, j int) bool {
-    return ranks[i] > ranks[j]
-  })
-
-  fmt.Println("Top 3 related links:")
-  for i := 0; i < 3; i++ {
-    fmt.Println("\t", i+1, ".", c.Content[i])
-  }
-}
+// func (c *Crawler) FuzzySearch(search string) {
+//   ranks := FuzzyRank(search, c.Content)
+//
+//   var wg sync.WaitGroup
+//
+//   wg.Add(2)
+//   go asyncSortRank(c.Content, ranks, &wg)
+//   go asyncSortRank(c.URL, ranks, &wg)
+//   wg.Wait()
+//
+//   // sort ranks
+//   sort.Slice(ranks, func(i, j int) bool {
+//     return ranks[i] > ranks[j]
+//   })
+//
+//   fmt.Println("Top 3 related links:")
+//   for i := 0; i < 3; i++ {
+//     fmt.Println("\t", i+1, ".", c.Content[i])
+//   }
+// }
 
 // func (c *Crawler) BleveSearch(q string) {
   // query := bleve.NewFuzzyQuery(q)
@@ -208,6 +208,7 @@ func (c *Crawler) Search(search string) (string, string, string) {
 
   sorted_urls, explanations := PageRankings(search, c.Content, c.URL)
   joined_exp := make([]string, len(explanations))
+
   for _, url := range sorted_urls{
     titles = append(titles, c.Titles[url])
   }
