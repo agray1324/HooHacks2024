@@ -208,6 +208,9 @@ func (c *Crawler) Search(search string) (string, string, string) {
 
   sorted_urls, explanations := PageRankings(search, c.Content, c.URL)
   joined_exp := make([]string, len(explanations))
+  for _, url := range sorted_urls{
+    titles = append(titles, c.Titles[url])
+  }
   for i := 0; i < len(explanations); i++ {
     joined_exp[i] = strings.Join(explanations[i], " ")
   }
