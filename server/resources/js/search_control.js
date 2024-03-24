@@ -1,8 +1,9 @@
 window.onload = () => {
-    document.getElementById("website").innerHTML="Currently Searching: " + _website
-    _urls = _urls.split("\\,\\")
-    _titles = _titles.split("\\,\\")
-    _data = _data.split("\\,\\")
+    document.getElementById("website").innerHTML="Currently Searching:<br>" + _website
+    delimiter = "\\,\\"
+    _urls = _urls.split(delimiter)
+    _titles = _titles.split(delimiter)
+    _data = _data.split(delimiter)
     list = ""
     console.log(_urls.length)
     for (let i = 0; i < _urls.length; i++){
