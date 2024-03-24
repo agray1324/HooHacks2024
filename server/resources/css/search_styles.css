@@ -12,7 +12,8 @@
 
 #list{
     border: 2px solid #98d5ff;
-    width: 60%
+    width: 60%;
+    background-color: #98d5ff;
 }
 
 .link{
@@ -22,6 +23,9 @@
 }
 
 .listrow{
-    padding: 20px 0px 0px 20px;
-    width:100%;
+    padding: 10px 10px;
+    margin: 15px 10px;
+    width: 100%;
+    border: 1px solid #98d5ff;
+    background-color: white;
 }
