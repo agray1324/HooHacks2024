@@ -65,23 +65,20 @@ func Tokenize(search string) []string {
 }
 
 func Relevances(search string, page []string) []int {
-  var wg sync.WaitGroup
   relevance := make([]int, len(page))
   search_tokens := Tokenize(search)
   for i := 0; i < len(relevance); i++ {
-    wg.Add(1)
-    go func() {
-      defer wg.Done()
       for j := 0; j < len(search_tokens); j++ {
         scoreSub := LevDistance(&search_tokens[j], &page[i])
-        if scoreSub > 3 {
-          scoreSub = max(len(search), len(page[i]))
+        if scoreSub >= 3 {
+          scoreSub = len(page[i])
         }
-        relevance[i] += max(len(search), len(page[i])) - scoreSub
+        // if scoreSub > 3 {
+        //   scoreSub = max(len(search_tokens[j]), len(page[i]))
+        // }
+        relevance[i] -= scoreSub
       }
-    }()
   }
-  wg.Wait()
   return relevance
 }
 
@@ -107,24 +104,12 @@ func PageRankings(search string, pages []string, urls []string) ([]string, [][]s
   tokens := make([][]string, len(pages))
 
   for i := 0; i < len(pages); i++ {
-    wg.Add(1)
-    go func() {
-      defer wg.Done()
-      tokens[i] = Tokenize(pages[i])
-    }()
+    tokens[i] = Tokenize(pages[i])
   }
-
-  wg.Wait()
 
   for i := 0; i < len(tokens); i++ {
-    wg.Add(1)
-    go func() {
-      defer wg.Done()
-      scores[i], rel[i] = PageScore(search, tokens[i])
-    }()
+    scores[i], rel[i] = PageScore(search, tokens[i])
   }
-
-  wg.Wait()
 
   wg.Add(1)
   asyncSortRankDouble(tokens, scores, &wg)
