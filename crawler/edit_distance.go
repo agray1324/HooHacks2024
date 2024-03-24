@@ -4,6 +4,7 @@ import (
   // "fmt"
   "regexp"
   "strings"
+  "sync"
 )
 
 // implementation for this algorithm was inspired by this article
@@ -50,4 +51,17 @@ func Tokenize(search string) []string {
   search = strings.TrimSpace(search)
 
   return strings.Split(strings.ToLower(tokenized), " ")
+}
+
+func Relevances(search string, page []string) {
+  var wg sync.WaitGroup
+  relevance := make([]int, len(page))
+  for i := 0; i < len(relevance); i++ {
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+      relevance[i] = -LevDistance(search, page[i])
+    }()
+  }
+  wg.Wait()
 }
