@@ -36,7 +36,7 @@ type Crawler struct {
   Collector *colly.Collector
   URL []string
   Content []string
-  Titles []string
+  Titles map[string]string
   Pattern string
   mtex sync.Mutex
   Count int
@@ -46,6 +46,7 @@ func (c *Crawler) Init() {
   c.Collector = setupCollector()
   c.Pattern = ""
   c.Count = 0
+  c.Titles = make(map[string]string)
 }
 
 func NewCrawler() *Crawler {
@@ -65,6 +66,7 @@ func setupCollector() *colly.Collector {
     // on each request set a random user agent
     r.Headers.Set("User-Agent", userAgents[rand.Intn(len(userAgents))])
   })
+
 
   // random delay on accesses
   c.Limit(&colly.LimitRule{
@@ -114,6 +116,17 @@ func TestResponse(url string) bool {
 
 // needs a reference to a waitgroup to parallelize storage
 func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
+  c.Collector.OnHTML("title", func(e *colly.HTMLElement){
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+
+      c.mtex.Lock()
+      c.Titles[e.Request.URL.String()] = e.Text
+      c.mtex.Unlock()
+    }()
+  })
+
   c.Collector.OnHTML("body", func(e *colly.HTMLElement){
     // create a new thread that stores data
     wg.Add(1)
@@ -185,16 +198,18 @@ func (c *Crawler) FuzzySearch(search string) {
   }
 }
 
-func (c *Crawler) Search(search string) string {
+func (c *Crawler) Search(search string) (string, string) {
   var urls []string
+  var titles []string
 
   for idx, con := range c.Content {
     if strings.Contains(con, search) {
       urls = append(urls, c.URL[idx])
+      titles = append(titles, c.Titles[c.URL[idx]])
     }
   }
 
-  return strings.Join(urls, `\,\`)
+  return strings.Join(urls, `\,\`), strings.Join(titles, `\,\`)
   // // Create Index
   //   vector_size := 3
   //   vectors_count := 100
