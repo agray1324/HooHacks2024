@@ -6,15 +6,17 @@ import (
   "bufio"
   "math/rand"
   "strings"
-  "time"
+  // "time"
   "regexp"
   "net/http"
   "errors"
   "sync"
+  "sort"
   // "io"
   // "bytes"
   // "golang.org/x/net/html"
   "github.com/gocolly/colly/v2"
+  "github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 func loadAgents() []string {
@@ -30,8 +32,8 @@ func loadAgents() []string {
 
 type Crawler struct {
   Collector *colly.Collector
-  URL []*string
-  Content []*string
+  URL []string
+  Content []string
   Pattern string
   mtex sync.Mutex
   Count int
@@ -64,8 +66,8 @@ func setupCollector() *colly.Collector {
   // random delay on accesses
   c.Limit(&colly.LimitRule{
     DomainGlob: "*",
-    Parallelism: 10,
-    RandomDelay: 50 * time.Millisecond,
+    Parallelism: 100,
+    // RandomDelay: 50 * time.Millisecond,
   })
 
   c.Async = true
@@ -121,15 +123,66 @@ func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
       url := e.Request.URL.String()
 
       c.mtex.Lock()
-      c.Content = append(c.Content, &text)
-      c.URL = append(c.URL, &url)
+      c.Content = append(c.Content, text)
+      c.URL = append(c.URL, url)
       c.Count += 1
       c.mtex.Unlock()
     }()
   })
 }
 
-func Crawl(url string) (*Crawler, error) {
+// parallelized sort by rank similarity
+func Rank(search string, content []string) []int {
+  var wg sync.WaitGroup
+  ranks := make([]int, len(content))
+
+  for idx, str := range content {
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+      ranks[idx] = fuzzy.RankMatchNormalizedFold(search, str)
+    }()
+  }
+
+  wg.Wait()
+
+  return ranks
+}
+
+func asyncSortRank(sli []string, ranks []int, wg *sync.WaitGroup) {
+  defer wg.Done()
+
+  sort.Slice(sli, func(i, j int) bool {
+    return ranks[i] > ranks[j]
+  })
+}
+
+// reorder the content and urls to reflect the best matches
+func (c *Crawler) FuzzySearch(search string) {
+  ranks := Rank(search, c.Content)
+
+  var wg sync.WaitGroup
+
+  wg.Add(2)
+  go asyncSortRank(c.Content, ranks, &wg)
+  go asyncSortRank(c.URL, ranks, &wg)
+  wg.Wait()
+
+  // sort ranks
+  sort.Slice(ranks, func(i, j int) bool {
+    return ranks[i] > ranks[j]
+  })
+
+  fmt.Println("Top 3 related links:")
+  for i := 0; i < 3; i++ {
+    fmt.Println("\t", i+1, ".", c.URL[i])
+  }
+
+  // TODO: feed this into a LLM
+  // TODO: remember to select by nonzero rank
+}
+
+func Index(url string) (*Crawler, error) {
   var wg sync.WaitGroup
   c := NewCrawler()
   c.CleanBody(&wg)
@@ -139,6 +192,7 @@ func Crawl(url string) (*Crawler, error) {
     c.SetLinkPattern(trimmedURL)
     
     c.Visit(url)
+
     c.Wait()
     wg.Wait()
 
