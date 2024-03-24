@@ -5,6 +5,7 @@ import (
     "net/http";
 	"hoohacks24/crawler";
     "fmt";
+    "strings";
 )
 
 func Router() *gin.Engine {
@@ -20,16 +21,19 @@ func Router() *gin.Engine {
 
     r.POST("/search", func(c *gin.Context) {
         website := c.PostForm("website")
+        if (!(strings.HasPrefix(website, "https://")) && !(strings.HasPrefix(website, "http://"))){
+            website = "https://" + website
+        }
         searchText := c.PostForm("searchText")
-        crawler, err := crawler.Index("https://quotes.toscrape.com")
+        crawler, err := crawler.Index(website)
         if (err != nil){
             fmt.Println("error")
         } else {
             delimiter:="\\,\\"
 
-            urls:= crawler.Search("Charles M. Schulz")
+            urls, titles:= crawler.Search(searchText)
             fmt.Println(urls)
-            titles:="Site a" + delimiter + "Site b"
+            //titles:="Site a" + delimiter + "Site b"
             data:= "aaaa" + delimiter + "bbbb"
             /*urls :=  make(map[int]string)
             urls[1] = "a.com"
