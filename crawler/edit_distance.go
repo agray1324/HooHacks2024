@@ -70,13 +70,14 @@ func Relevances(search string, page []string) []int {
   for i := 0; i < len(relevance); i++ {
       for j := 0; j < len(search_tokens); j++ {
         scoreSub := LevDistance(&search_tokens[j], &page[i])
-        if scoreSub >= 3 {
-          scoreSub = len(page[i])
+        if scoreSub < 3 {
+          relevance[i] += 5
+          relevance[i] *= 2
         }
+
         // if scoreSub > 3 {
         //   scoreSub = max(len(search_tokens[j]), len(page[i]))
         // }
-        relevance[i] -= scoreSub
       }
   }
   return relevance
@@ -86,6 +87,7 @@ func PageScore(search string, page []string) (int, int) {
   r := Relevances(search, page)
   rank := 0
   maxRank := 0
+
 
   for i, rel := range r {
     rank += rel
