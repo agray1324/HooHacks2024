@@ -28,6 +28,7 @@ func Router() *gin.Engine {
         crawler, err := crawler.Index(website)
         if (err != nil){
             fmt.Println("error")
+            c.HTML(http.StatusOK, "index.tmpl", gin.H{})
         } else {
             //delimiter:="\\,\\"
 
