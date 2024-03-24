@@ -10,7 +10,11 @@ window.onload = () => {
         /*if(list != ""){
             list += "<br>"
         }*/
-        list += "<div class=\"listrow row\"><pre><h1 id=\"title_" + String(i) + "\">" + _titles[i] + "  <a href=\"" + _urls[i] + "\"><i class=\"fa-solid fa-right-to-bracket\"></i></a></h1><pre><p1 class=\"col-12\" id=\"data_" + String(i) + "\">" + _data[i] + "</p1></div>"
+        list += "<div class=\"listrow row\" onclick=goto(\"" + _urls[i] + "\")><pre><h1 id=\"title_" + String(i) + "\">" + _titles[i] + "</h1><pre><p1 class=\"col-12\" id=\"data_" + String(i) + "\">" + _data[i] + "</p1></div>"
     } 
     document.getElementById("list").innerHTML = list
+}
+
+function goto(url){
+    window.open(url,'_blank');
 }
