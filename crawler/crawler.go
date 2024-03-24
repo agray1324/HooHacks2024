@@ -17,7 +17,6 @@ import (
   // "bytes"
   // "golang.org/x/net/html"
   "github.com/gocolly/colly/v2"
-  "github.com/lithammer/fuzzysearch/fuzzy"
   // "github.com/blevesearch/bleve/v2"
   // usearch "github.com/unum-cloud/usearch/golang"
 )
@@ -127,30 +126,7 @@ func TestResponse(url string) bool {
 
 // needs a reference to a waitgroup to parallelize storage
 func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
-  // race condition, fix this
   c.Collector.OnHTML("title", func(e *colly.HTMLElement){
-    wg.Add(1)
-    go func() {
-      defer wg.Done()
-
-      c.mtex.Lock()
-      c.Titles[e.Request.URL.String()] = e.Text
-      c.mtex.Unlock()
-    }()
-  })
-
-  c.Collector.OnHTML("meta[name=description]", func(e *colly.HTMLElement){
-    wg.Add(1)
-    go func() {
-      defer wg.Done()
-
-      c.mtex.Lock()
-      c.Titles[e.Request.URL.String()] = e.Text
-      c.mtex.Unlock()
-    }()
-  })
-
-  c.Collector.OnHTML("meta[property=description]", func(e *colly.HTMLElement){
     wg.Add(1)
     go func() {
       defer wg.Done()
@@ -186,35 +162,9 @@ func (c *Crawler) CleanBody(wg *sync.WaitGroup) {
   })
 }
 
-// parallelized sort by rank similarity
-func Rank(search string, content []string) []int {
-  var wg sync.WaitGroup
-  ranks := make([]int, len(content))
-
-  for idx, str := range content {
-    wg.Add(1)
-    go func() {
-      defer wg.Done()
-      ranks[idx] = fuzzy.RankMatchNormalizedFold(search, str)
-    }()
-  }
-
-  wg.Wait()
-
-  return ranks
-}
-
-func asyncSortRank(sli []string, ranks []int, wg *sync.WaitGroup) {
-  defer wg.Done()
-
-  sort.Slice(sli, func(i, j int) bool {
-    return ranks[i] > ranks[j]
-  })
-}
-
 // reorder the content and urls to reflect the best matches
 func (c *Crawler) FuzzySearch(search string) {
-  ranks := Rank(search, c.Content)
+  ranks := FuzzyRank(search, c.Content)
 
   var wg sync.WaitGroup
 
@@ -246,7 +196,7 @@ func (c *Crawler) FuzzySearch(search string) {
   // fmt.Println(searchResults)
 // }
 
-func (c *Crawler) Search(search string) (string, string) {
+func (c *Crawler) Search(search string) (string, string, string) {
   var urls []string
   var titles []string
 
@@ -257,7 +207,13 @@ func (c *Crawler) Search(search string) (string, string) {
     }
   }
 
-  return strings.Join(urls, `\,\`), strings.Join(titles, `\,\`)
+  sorted_urls, explanations := PageRankings(search, c.Content, c.URL)
+  joined_exp := make([]string, len(explanations))
+  for i := 0; i < len(explanations); i++ {
+    joined_exp[i] = strings.Join(explanations[i], " ")
+  }
+
+  return strings.Join(sorted_urls, `\\,\\`), strings.Join(titles, `\\,\\`), strings.Join(joined_exp, `\\,\\`)
 }
 
 func Index(url string) (*Crawler, error) {

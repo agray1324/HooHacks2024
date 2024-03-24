@@ -5,6 +5,8 @@ import (
   "regexp"
   "strings"
   "sync"
+  "sort"
+  "github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 // implementation for this algorithm was inspired by this article
@@ -49,19 +51,146 @@ func Tokenize(search string) []string {
   tokenized = spaces.ReplaceAllString(tokenized, " ")
   tokenized = strings.ReplaceAll(tokenized, "\"", "'")
   search = strings.TrimSpace(search)
+  tokenized = strings.ToLower(tokenized)
+  token_sli := strings.Split(tokenized, " ")
 
-  return strings.Split(strings.ToLower(tokenized), " ")
+  var revised []string
+  for i := 0; i < len(token_sli); i++ {
+    if len(token_sli[i]) >= 3 {
+      revised = append(revised, token_sli[i])
+    }
+  }
+
+  return revised
 }
 
-func Relevances(search string, page []string) {
+func Relevances(search string, page []string) []int {
   var wg sync.WaitGroup
   relevance := make([]int, len(page))
+  search_tokens := Tokenize(search)
   for i := 0; i < len(relevance); i++ {
     wg.Add(1)
     go func() {
       defer wg.Done()
-      relevance[i] = -LevDistance(search, page[i])
+      for j := 0; j < len(search_tokens); j++ {
+        scoreSub := LevDistance(&search_tokens[j], &page[i])
+        if scoreSub > 3 {
+          scoreSub = max(len(search), len(page[i]))
+        }
+        relevance[i] += max(len(search), len(page[i])) - scoreSub
+      }
     }()
   }
   wg.Wait()
+  return relevance
+}
+
+func PageScore(search string, page []string) (int, int) {
+  r := Relevances(search, page)
+  rank := 0
+  maxRank := 0
+  for i, rel := range r {
+    rank += rel
+    if rel > r[maxRank] {
+      maxRank = i
+    }
+  }
+
+  return rank, maxRank
+}
+
+func PageRankings(search string, pages []string, urls []string) ([]string, [][]string) {
+  var wg sync.WaitGroup
+  scores := make([]int, len(pages))
+  rel := make([]int, len(pages))
+  tokens := make([][]string, len(pages))
+
+  for i := 0; i < len(pages); i++ {
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+      tokens[i] = Tokenize(pages[i])
+    }()
+  }
+
+  wg.Wait()
+
+  for i := 0; i < len(tokens); i++ {
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+      scores[i], rel[i] = PageScore(search, tokens[i])
+    }()
+  }
+
+  wg.Wait()
+
+  wg.Add(1)
+  asyncSortRankDouble(tokens, scores, &wg)
+
+  wg.Add(1)
+  asyncSortRank(urls, scores, &wg)
+
+  wg.Add(1)
+  asyncSortRankInt(rel, scores, &wg)
+
+  wg.Wait()
+
+  sort.Slice(scores, func(i, j int) bool {
+    return scores[i] > scores[j]
+  })
+
+  keywords := make([][]string, 10)
+  for i := 0; i < len(keywords); i++ {
+    keywords[i] = getKeywords(rel[i], tokens[i])
+  }
+
+  return urls[:10], keywords
+}
+
+
+// parallelized sort by rank similarity
+func FuzzyRank(search string, content []string) []int {
+  var wg sync.WaitGroup
+  ranks := make([]int, len(content))
+
+  for idx, str := range content {
+    wg.Add(1)
+    go func() {
+      defer wg.Done()
+      ranks[idx] = fuzzy.RankMatchNormalizedFold(search, str)
+    }()
+  }
+
+  wg.Wait()
+
+  return ranks
+}
+
+func asyncSortRank(sli []string, ranks []int, wg *sync.WaitGroup) {
+  defer wg.Done()
+
+  sort.Slice(sli, func(i, j int) bool {
+    return ranks[i] > ranks[j]
+  })
+}
+
+func asyncSortRankDouble(sli [][]string, ranks []int, wg *sync.WaitGroup) {
+  defer wg.Done()
+
+  sort.Slice(sli, func(i, j int) bool {
+    return ranks[i] > ranks[j]
+  })
+}
+
+func asyncSortRankInt(sli []int, ranks []int, wg *sync.WaitGroup) {
+  defer wg.Done()
+
+  sort.Slice(sli, func(i, j int) bool {
+    return ranks[i] > ranks[j]
+  })
+}
+
+func getKeywords(rel int, tokens []string) []string{
+  return tokens[max(0, rel-5):min(len(tokens), rel+5)]
 }
