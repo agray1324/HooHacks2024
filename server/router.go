@@ -29,13 +29,13 @@ func Router() *gin.Engine {
         if (err != nil){
             fmt.Println("error")
         } else {
-            delimiter:="\\,\\"
+            //delimiter:="\\,\\"
 
-            urls, titles:= crawler.Search(searchText)
+            urls, titles, data:= crawler.Search(searchText)
             fmt.Println(urls)
-            //titles:="Site a" + delimiter + "Site b"
+            /*titles:="Site a" + delimiter + "Site b"
             data:= "aaaa" + delimiter + "bbbb"
-            /*urls :=  make(map[int]string)
+            urls :=  make(map[int]string)
             urls[1] = "a.com"
             urls[2] = "b.com"
             titles :=  make(map[int]string)
